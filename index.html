@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Datasets</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            overflow: auto;
+            position: relative;
+        }
+        #background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            animation: gradient 10s ease infinite;
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4, #ffd1ff, #a18cd1, #fbc2eb);
+            background-size: 500% 500%;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        #content {
+            position: relative;
+            z-index: 1;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        #tabs {
+            display: flex;
+            cursor: pointer;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        .tab {
+            padding: 10px;
+            margin: 0 5px;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+        }
+        .tab-content {
+            display: none;
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-top: -1px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div id="background"></div>
+
+<div id="content">
+
+    <div id="tabs">
+        <div class="tab active" onclick="showTab('presentation')">Presentation</div>
+        <div class="tab" onclick="showTab('workflow')">Workflow</div>
+        <div class="tab" onclick="showTab('cleaning')">Python Cleaning Code</div>
+        <div class="tab" onclick="showTab('visualization')">Visualization</div>
+    </div>
+
+    <div id="presentation" class="tab-content active">
+        <h1>Select a CSV file to view</h1>
+        <select id="fileSelect" onchange="loadAndParseCSV()">
+            <option value="">--Select a file--</option>
+            <option value="dataset/customers_dataset.csv">Customers Dataset</option>
+            <option value="dataset/geolocation_dataset.csv">Geolocation Dataset</option>
+            <option value="dataset/order_items_dataset.csv">Order Items Dataset</option>
+            <option value="dataset/order_payments_dataset.csv">Order Payments Dataset</option>
+            <option value="dataset/order_reviews_dataset.csv">Order Reviews Dataset</option>
+            <option value="dataset/orders_dataset.csv">Orders Dataset</option>
+            <option value="dataset/product_category_name_translation.csv">Product Category Name Translation</option>
+            <option value="dataset/products_dataset.csv">Products Dataset</option>
+            <option value="dataset/sellers_dataset.csv">Sellers Dataset</option>
+        </select>
+	<table id="outputTable" border="1"></table>
+    </div>
+
+    <div id="workflow" class="tab-content">
+        <!-- Insert your workflow content here -->
+    </div>
+
+    <div id="cleaning" class="tab-content">
+        <pre>
+import pandas as pd
+import os
+
+def clean_data(file_path):
+    # Load the data
+    data = pd.read_csv(file_path)
+    
+    # Drop duplicates
+    data = data.drop_duplicates()
+    
+    # Drop rows with any missing values
+    data = data.dropna()
+    
+    # Reset the index after dropping rows
+    data = data.reset_index(drop=True)
+    
+    # Construct new file path for cleaned data
+    dir_path, file_name = os.path.split(file_path)
+    cleaned_file_name = f'cleaned_{file_name}'
+    cleaned_file_path = os.path.join(dir_path, cleaned_file_name)
+    
+    # Save the cleaned data to a new file
+    data.to_csv(cleaned_file_path, index=False)
+
+# List of dataset files
+files = [
+    'dataset/customers_dataset.csv',
+    'dataset/geolocation_dataset.csv',
+    'dataset/order_items_dataset.csv',
+    'dataset/order_payments_dataset.csv',
+    'dataset/order_reviews_dataset.csv',
+    'dataset/orders_dataset.csv',
+     'dataset/product_category_name_translation.csv',
+    'dataset/products_dataset.csv',
+    'dataset/sellers_dataset.csv'
+]
+
+# Cleaning each file
+for file in files:
+    clean_data(file)
+        </pre>
+    </div>
+
+    <div id="visualization" class="tab-content">
+        <!-- Insert your visualization content here -->
+    </div>
+
+</div>
+
+<p style="position: fixed; bottom: 10px; right: 10px;">
+    Project by Vijay Lathwal, Suraj Jain, Karishma Kundal, Amrit Saini, Baljinder Kaur
+</p>
+
+<script>
+function showTab(tabId) {
+    var contents = document.querySelectorAll('.tab-content');
+    for (var i = 0; i < contents.length; i++) {
+        contents[i].classList.remove('active');
+    }
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+    }
+    document.getElementById(tabId).classList.add('active');
+    var activeTab = Array.prototype.find.call(tabs, function(tab) {
+        return tab.textContent.toLowerCase() === tabId;
+    });
+    activeTab.classList.add('active');
+}
+
+function loadAndParseCSV() {
+    var selectedFile = document.getElementById('fileSelect').value;
+    if (selectedFile) {
+        Papa.parse(selectedFile, {
+            download: true,
+            header: true,
+            complete: function(results) {
+                var table = document.getElementById('outputTable');
+                table.innerHTML = "";  // Clear any existing data
+                var headerRow = document.createElement('tr');
+                results.meta.fields.forEach(function(fieldName) {
+                    var th = document.createElement('th');
+                    th.textContent = fieldName;
+                    headerRow.appendChild(th);
+                });
+                table.appendChild(headerRow);
+                results.data.forEach(function(row) {
+                    var tr = document.createElement('tr');
+                    results.meta.fields.forEach(function(fieldName) {
+                        var td = document.createElement('td');
+                        td.textContent = row[fieldName];
+                        tr.appendChild(td);
+                    });
+                    table.appendChild(tr);
+                });
+            }
+        });
+    }
+}
+</script>
+
+</body>
+</html>
